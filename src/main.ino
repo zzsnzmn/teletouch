@@ -151,51 +151,47 @@ void loop() {
 
   /////////////////////////////////////scale and octave setup////////////////////////////////////////////
   // scales
+  // TODO: check playback mode here
+  if (digitalRead(shift) == LOW) { /// if shift is pressed
 
-  if (digitalRead(shift) == LOW && touchRead(key[11]) > thresh[11]) { /// if shift key and key 12 are pressed
-    // currButtonMode = omnichord;
-    set_scale(scale, maj7chord);
-  }
-
-  if (digitalRead(shift) == LOW && touchRead(key[10]) > thresh[10]) { /// if shift key and key 11 are pressed
-    // currButtonMode = standard;
-    set_scale(scale, min7chord);
-  }
-
-  if (digitalRead(shift) == LOW && touchRead(key[5]) > thresh[5]) { /// if shift key and key 6 are pressed
-    set_scale(scale, minorpent);
-  }
-
-  if (digitalRead(shift) == LOW && touchRead(key[4]) > thresh[4]) { /// if shift key and key 5 are pressed
-    set_scale(scale, majorpent);
-  }
-
-  if (digitalRead(shift) == LOW && touchRead(key[3]) > thresh[3]) { /// if shift key and key 4 are pressed
-    for (int i = 0;  i < 12; i++) { // loop 12 times
-      scale[i] = harmminor[i];
+    if (touchRead(key[11]) > thresh[11]) { // key 12 is pressed
+      // currButtonMode = omnichord;
+      set_scale(scale, maj7chord);
     }
-        //shiftcount = 0;
-  }
 
-  if (digitalRead(shift) == LOW && touchRead(key[2]) > thresh[2]) { /// if shift key and key 3 are pressed
-    for (int i = 0;  i < 12; i++) { // loop 12 times
-      scale[i] = minor[i];
+    if (touchRead(key[10]) > thresh[10]) { /// if shift key and key 11 are pressed
+      // currButtonMode = standard;
+      set_scale(scale, min7chord);
+    }
+
+    if (touchRead(key[5]) > thresh[5]) { /// if shift key and key 6 are pressed
+      set_scale(scale, minorpent);
+    }
+
+    if (touchRead(key[4]) > thresh[4]) { /// if shift key and key 5 are pressed
+      set_scale(scale, majorpent);
+    }
+
+    if (touchRead(key[3]) > thresh[3]) { /// if shift key and key 4 are pressed
+      set_scale(scale, harmminor);
+    }
+
+    if (touchRead(key[2]) > thresh[2]) { /// if shift key and key 3 are pressed
+      set_scale(scale, minor);
+    }
+
+    if (touchRead(key[1]) > thresh[1]) { /// if shift key and key 2 are pressed
+      set_scale(scale, major);
+    }
       
-        }
-        //shiftcount = 0;
+    if (touchRead(key[0]) > thresh[0]) { /// if shift key and key 1 are pressed
+      set_scale(scale, chromatic);
     }
-
-  if (digitalRead(shift) == LOW && touchRead(key[1]) > thresh[1]) { /// if shift key and key 2 are pressed
-    for (int i = 0;  i < 12; i++) { // loop 12 times
-      scale[i] = major[i];
-        }
-        //shiftcount = 0;
-    }
-    
-  if (digitalRead(shift) == LOW && touchRead(key[0]) > thresh[0]) { /// if shift key and key 1 are pressed
-    for (int i = 0;  i < 12; i++) { // loop 12 times
-      scale[i] = chromatic[i];
-    }
+  }
+  if (currButtonMode == omnichord) {
+    // TODO: set transpose for chords -- tbd how to add to notes
+  } else {
+    // TODO: unset transposition
   }
     
   //OCTAVES
