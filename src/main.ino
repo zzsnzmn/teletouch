@@ -33,7 +33,9 @@ int harmminor[12] = {0, 2, 3, 5, 7, 8, 11, 12, 15, 16, 18, 19};
 int majorpent[12] = {0, 2, 4, 7, 9, 12, 14, 16, 19, 21, 24, 26};
 int minorpent[12] = {0, 3, 5, 7, 10, 12, 15, 17, 19, 22, 24, 27};
 
-
+// TODO: fixup these here :P
+int maj7chord[12] = {0, 4, 7, 11, 0+12, 4+12, 7+12, 11+12, 0+12+12, 4+12+12, 7+12+12, 11+12+12};
+int min7chord[12] = {0, 3, 7, 10, 0+12, 3+12, 7+12, 10+12, 0+12+12, 3+12+12, 7+12+12, 10+12+12};
 
 int scale[12] = {0, 2, 4, 5, 7, 9, 11, 12, 14, 16, 17, 19}; // default scale is major
 int octave = 60;
@@ -114,8 +116,6 @@ enum buttonMode {
 
 buttonMode currButtonMode = standard;
 
-
-
 void setup() {
   pinMode(LED, OUTPUT);
   pinMode(keyGate1, OUTPUT); //key gate low OUT
@@ -149,31 +149,26 @@ void loop() {
     shiftcount = 0;
   }
 
-  if (digitalRead(shift) == LOW && touchRead(key[11]) > thresh[11]) { /// if shift key and key 6 are pressed
-    currButtonMode = omnichord;
-  }
-
-
-  if (digitalRead(shift) == LOW && touchRead(key[11]) > thresh[11]) { /// if shift key and key 6 are pressed
-    currButtonMode = standard;
-  }
-
   /////////////////////////////////////scale and octave setup////////////////////////////////////////////
   // scales
+
+  if (digitalRead(shift) == LOW && touchRead(key[11]) > thresh[11]) { /// if shift key and key 12 are pressed
+    // currButtonMode = omnichord;
+    set_scale(scale, maj7chord);
+  }
+
+  if (digitalRead(shift) == LOW && touchRead(key[10]) > thresh[10]) { /// if shift key and key 11 are pressed
+    // currButtonMode = standard;
+    set_scale(scale, min7chord);
+  }
+
   if (digitalRead(shift) == LOW && touchRead(key[5]) > thresh[5]) { /// if shift key and key 6 are pressed
-    for (int i = 0;  i < 12; i++) { // loop 12 times
-      scale[i] = minorpent[i];
-        }
-        //shiftcount = 0;
-    }
+    set_scale(scale, minorpent);
+  }
 
   if (digitalRead(shift) == LOW && touchRead(key[4]) > thresh[4]) { /// if shift key and key 5 are pressed
-    for (int i = 0;  i < 12; i++) { // loop 12 times
-      scale[i] = majorpent[i];
-      
-        }
-        //shiftcount = 0;
-    }
+    set_scale(scale, majorpent);
+  }
 
   if (digitalRead(shift) == LOW && touchRead(key[3]) > thresh[3]) { /// if shift key and key 4 are pressed
     for (int i = 0;  i < 12; i++) { // loop 12 times
@@ -506,5 +501,12 @@ void requestEvent() {
     iipressure = constrain(iipressure, 0, 16384);
     Wire.write(iipressure >> 8);  // send first byte of key pressure value
     Wire.write(iipressure & 255);  // send second byte of key pressure value
+  }
+}
+
+void set_scale(int s[], int t[]) {
+  for (int i = 0; i < 12; i++)
+  {
+    s[i] = t[i];
   }
 }
