@@ -33,9 +33,38 @@ int harmminor[12] = {0, 2, 3, 5, 7, 8, 11, 12, 15, 16, 18, 19};
 int majorpent[12] = {0, 2, 4, 7, 9, 12, 14, 16, 19, 21, 24, 26};
 int minorpent[12] = {0, 3, 5, 7, 10, 12, 15, 17, 19, 22, 24, 27};
 
-// TODO: fixup these here :P
-int maj7chord[12] = {0, 4, 7, 11, 0+12, 4+12, 7+12, 11+12, 0+12+12, 4+12+12, 7+12+12, 11+12+12};
-int min7chord[12] = {0, 3, 7, 10, 0+12, 3+12, 7+12, 10+12, 0+12+12, 3+12+12, 7+12+12, 10+12+12};
+int maj7chord[12] = {
+  0, 4, 7, 11,
+  12, 16, 19, 23,
+  24, 28, 31, 35,
+};
+
+int min7chord[12] = {
+  0, 3, 7, 10,
+  12, 15, 19, 22,
+  24, 27, 31, 34,
+};
+
+int dom7chord[12] = {
+  0, 4, 7, 10,
+  12, 16, 19, 22,
+  24, 28, 31, 34,
+};
+
+// TODO: the chords should probably be more chord-y
+int omniChordButton = 0;
+int omniChordScales[8][12] = {
+  // {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, // TODO: dummy for 0 make it set to the current scale?
+  {major[0], major[1], major[2], major[3], major[4], major[5], major[6], major[7], major[8], major[9], major[10], major[11]},
+  {0, 4, 7, 11, 12, 16, 19, 23, 24, 28, 31, 35}, // IMaj7
+  {0+major[1], 3+major[1], 7+major[1], 10+major[1], 12+major[1], 15+major[1], 19+major[1], 22+major[1], 24+major[1], 27+major[1], 31+major[1], 34+major[1]}, // ii
+  {0+major[2], 3+major[2], 7+major[2], 10+major[2], 12+major[2], 15+major[2], 19+major[2], 22+major[2], 24+major[2], 27+major[2], 31+major[2], 34+major[2]}, // iii
+  {0+major[3], 4+major[3], 7+major[3], 11+major[3], 12+major[3], 16+major[3], 19+major[3], 23+major[3], 24+major[3], 28+major[3], 31+major[3], 35+major[3]}, // IVMaj7
+  {0+major[4], 4+major[4], 7+major[4], 10+major[4], 12+major[4], 16+major[4], 19+major[4], 22+major[4], 24+major[4], 28+major[4], 31+major[4], 34+major[4]}, // V7
+  {0+major[5], 3+major[5], 7+major[5], 10+major[5], 12+major[5], 15+major[5], 19+major[5], 22+major[5], 24+major[5], 27+major[5], 31+major[5], 34+major[5]}, // iiv
+  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, // TODO: make this diminished
+};
+
 
 int scale[12] = {0, 2, 4, 5, 7, 9, 11, 12, 14, 16, 17, 19}; // default scale is major
 int octave = 60;
@@ -151,16 +180,30 @@ void loop() {
 
   /////////////////////////////////////scale and octave setup////////////////////////////////////////////
   // scales
-  // TODO: check playback mode here
-  if (digitalRead(shift) == LOW) { /// if shift is pressed
+  // if shift is pressed
+  if (digitalRead(shift) == LOW) { 
 
-    if (touchRead(key[11]) > thresh[11]) { // key 12 is pressed
-      // currButtonMode = omnichord;
+    // key 12 is pressed
+    // set omnichord mode
+    if (touchRead(key[11]) > thresh[11]) { 
+      currButtonMode = omnichord;
+    }
+
+    // key 11 is pressed
+    // set normal button mode
+    if (touchRead(key[10]) > thresh[10]) {
+      currButtonMode = standard;
+    }
+
+    if (touchRead(key[8]) > thresh[8]) { /// if shift key and key 7 are pressed
       set_scale(scale, maj7chord);
     }
 
-    if (touchRead(key[10]) > thresh[10]) { /// if shift key and key 11 are pressed
-      // currButtonMode = standard;
+    if (touchRead(key[7]) > thresh[7]) { /// if shift key and key 6 are pressed
+      set_scale(scale, maj7chord);
+    }
+
+    if (touchRead(key[6]) > thresh[6]) { /// if shift key and key 6 are pressed
       set_scale(scale, min7chord);
     }
 
@@ -188,10 +231,15 @@ void loop() {
       set_scale(scale, chromatic);
     }
   }
+
   if (currButtonMode == omnichord) {
     // TODO: set transpose for chords -- tbd how to add to notes
+    // read_buttons(...) {
+
+    // }
   } else {
     // TODO: unset transposition
+
   }
     
   //OCTAVES
@@ -290,30 +338,98 @@ void loop() {
     
   //////////////////////////////////// MIDI SECTION ///////////////////////////////////////////////////
 
-
-  if (digitalRead(shift) == HIGH) { // only move on to detecting musical key presses if shift is released
-                                    // this is so pressing shift+key 1 doesnt also play note 1!
+  // only move on to detecting musical key presses if shift is released
+  // this is so pressing shift+key 1 doesnt also play note 1!
+  if (digitalRead(shift) == HIGH) { 
+                                    
     shiftcount = 0; // reset shiftcount
 
+
+    //////////// handle button press in omnichord mode
+    if (currButtonMode == omnichord) {
+      // for (int i = 0;  i < 8; i++) { //loop 8 times
+      for (int i = 0;  i < 8; i++) { //loop 8 times
+          if(digitalRead(butn[i]) == LOW && buttonFlag[i] == 0) {
+            buttonFlag[i] = 1;
+            // if we're changing the current chord then send note offs to prevent stuck notes
+            if (omniChordButton != i) {
+              for (int i = 0; i < 8; i++) {
+                usbMIDI.sendNoteOff(omniChordScales[omniChordButton][i] + transpose + octave, 0, channel); 
+              }
+            }
+            omniChordButton = i;
+          }
+          if(digitalRead(butn[i]) == HIGH && buttonFlag[i] == 1) {
+            buttonFlag[i] = 0;
+          }
+      }
+    } 
+
+    // handle button press in "standard" mode
+    if (currButtonMode == standard) {
+      for (int i = 0;  i < 8; i++) { //loop 8 times
+          if(digitalRead(butn[i]) == LOW && buttonFlag[i] == 0) {
+            buttonFlag[i] = 1;
+            usbMIDI.sendNoteOn(scale[i] + transpose + buttonOctave, 100, channel);
+          }
+          if(digitalRead(butn[i]) == HIGH && buttonFlag[i] == 1) {
+            buttonFlag[i] = 0;
+            usbMIDI.sendNoteOff(scale[i] + transpose + buttonOctave, 100, channel);
+          }
+      }
+    }
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // handle touch plates
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     for (int i = 11;  i > -1; i = i - 1) { // loop 12 times, i increments from 11 to 0, so this one for loop checks all keys.
-      currentkey[i] = touchRead(key[i]); 
-      if (currentkey[i] > thresh[i] && playflag[i] == 0) {
-        playflag[i] = 1;
-        if (playflag[i] == 1) { 
-          cckey = key[i];
-          ccmin = thresh[i];
-          ccmax = maximum[i];
+      // TODO: poss add touchplate struct to warp around specific modes
+
+      if (currButtonMode == omnichord) {
+        currentkey[i] = touchRead(key[i]); 
+        if (currentkey[i] > thresh[i] && playflag[i] == 0) {
+          playflag[i] = 1;
+          if (playflag[i] == 1) { 
+            cckey = key[i];
+            ccmin = thresh[i];
+            ccmax = maximum[i];
+          }
+          delay(1);
+          velocity[i] = touchRead(key[i]); 
+          velocity[i] = map(velocity[i], thresh[i], maximum[i], 0, 127); 
+          velocity[i] = constrain(velocity[i], 0, 127); 
+          usbMIDI.sendNoteOn(omniChordScales[omniChordButton][i] + transpose + octave, velocity[i], channel); 
         }
-        delay(1);
-        velocity[i] = touchRead(key[i]); 
-        velocity[i] = map(velocity[i], thresh[i], maximum[i], 0, 127); 
-        velocity[i] = constrain(velocity[i], 0, 127); 
-        usbMIDI.sendNoteOn(scale[i] + transpose + octave, velocity[i], channel); 
+
+        if(currentkey[i] < thresh[i] && playflag[i] == 1) {
+          playflag[i] = 0;
+          usbMIDI.sendNoteOff(omniChordScales[omniChordButton][i] + transpose + octave, 0, channel); 
+        }
+
       }
 
-      if(currentkey[i] < thresh[i] && playflag[i] == 1) {
-        playflag[i] = 0;
-        usbMIDI.sendNoteOff(scale[i] + transpose + octave, 0, channel); 
+      if (currButtonMode == standard) {
+        currentkey[i] = touchRead(key[i]); 
+        if (currentkey[i] > thresh[i] && playflag[i] == 0) {
+          playflag[i] = 1;
+          if (playflag[i] == 1) { 
+            cckey = key[i];
+            ccmin = thresh[i];
+            ccmax = maximum[i];
+          }
+          delay(1);
+          velocity[i] = touchRead(key[i]); 
+          velocity[i] = map(velocity[i], thresh[i], maximum[i], 0, 127); 
+          velocity[i] = constrain(velocity[i], 0, 127); 
+          usbMIDI.sendNoteOn(scale[i] + transpose + octave, velocity[i], channel); 
+        }
+
+        if(currentkey[i] < thresh[i] && playflag[i] == 1) {
+          playflag[i] = 0;
+          usbMIDI.sendNoteOff(scale[i] + transpose + octave, 0, channel); 
+        }
       }
     }
 
@@ -326,18 +442,10 @@ void loop() {
       usbMIDI.sendControlChange(1, currentcc, channel);
     } 
             
-    // button notes
-    for (int i = 0;  i < 8; i++) { //loop 8 times
-        if(digitalRead(butn[i]) == LOW && buttonFlag[i] == 0) {
-          buttonFlag[i] = 1;
-          usbMIDI.sendNoteOn(scale[i] + transpose + buttonOctave, 100, channel);
-        }
-        if(digitalRead(butn[i]) == HIGH && buttonFlag[i] == 1) {
-        buttonFlag[i] = 0;
-          usbMIDI.sendNoteOff(scale[i] + transpose + buttonOctave, 100, channel);
-        }
-    }
             
+
+    ////////////////////////////////////////////////////////////////////////////
+    // potentimeter reading
     for (int i = 0;  i < 10; i++) { // loop 10 times to iterate throuch each pot
       potsample1[i] = analogRead(pot[i]);
       potsample1[i] = map(potsample1[i], 1023, 0, 0, 127);
@@ -351,19 +459,9 @@ void loop() {
       potsample3[i] = map(potsample3[i], 1023, 0, 0, 127);
       potsample3[i] = constrain(potsample3[i], 0, 127);
       delay(1);
-    //  potsample4[i] = analogRead(pot[i]);
-    //  potsample4[i] = map(potsample4[i], 1023, 0, 0, 127);
-    //  potsample4[i] = constrain(potsample4[i], 0, 127);
-    //  delay(1);
-    //  potsample5[i] = analogRead(pot[i]);
-    //  potsample5[i] = map(potsample5[i], 1023, 0, 0, 127);
-    //  potsample5[i] = constrain(potsample5[i], 0, 127);
-    //  delay(1);
-    //  potsample6[i] = analogRead(pot[i]);
-    //  potsample6[i] = map(potsample6[i], 1023, 0, 0, 127);
-    //  potsample6[i] = constrain(potsample6[i], 0, 127);
-    //  delay(1);
-      potcc[i] = potsample1[i] + potsample2[i] + potsample3[i]; // + potsample4[i] + potsample5[i] + potsample6[i]; // read the pot and map to midi values 6 times, and take an average.
+      // read the pot and map to midi values 6 times, and take an average.
+      potcc[i] = potsample1[i] + potsample2[i] + potsample3[i]; 
+      // + potsample4[i] + potsample5[i] + potsample6[i]; 
       potcc[i] = potcc[i] / 3;
       
       if ((potcc[i] < lastpotcc[i] - 1) || (potcc[i] > lastpotcc[i] + 1)) { //  if pot value has changed by 2 or more in either direction (for further smoothing), output as cc on channel 2 - 6
@@ -500,6 +598,8 @@ void requestEvent() {
   }
 }
 
+// set_scale writes the values from a scale t into scale s
+// s[] and t[] must both have at least 12 items.
 void set_scale(int s[], int t[]) {
   for (int i = 0; i < 12; i++)
   {
